@@ -128,7 +128,7 @@ class ObjectDetectorHelper(
         val personResults = mutableListOf<Detection>()
         if (results != null) {
             for (result in results) {
-                Log.d("Results", result.toString())
+                // Log.d("Results", result.toString())
                 if (result.categories[0].label == "person") {
                     personResults.add(result)
                 }
