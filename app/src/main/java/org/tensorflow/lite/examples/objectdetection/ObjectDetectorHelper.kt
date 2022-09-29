@@ -125,15 +125,19 @@ class ObjectDetectorHelper(
         val results = objectDetector?.detect(tensorImage)
         inferenceTime = SystemClock.uptimeMillis() - inferenceTime
 
+        val personResults = mutableListOf<Detection>()
         if (results != null) {
             for (result in results) {
-                Log.d("Category", result.categories[0].displayName.toString())
+                Log.d("Results", result.toString())
+                if (result.categories[0].label == "person") {
+                    personResults.add(result)
+                }
             }
         }
 
 
         objectDetectorListener?.onResults(
-            results,
+            personResults,
             inferenceTime,
             tensorImage.height,
             tensorImage.width)
