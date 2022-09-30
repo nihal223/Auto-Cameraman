@@ -37,7 +37,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
     private var textBackgroundPaint = Paint()
     private var textPaint = Paint()
     private var centerPaint = Paint()
-    private var centroidPaint = Paint()
+    private var linePaint = Paint()
 
     private var scaleFactor: Float = 1f
 
@@ -71,14 +71,23 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         centerPaint.color = ContextCompat.getColor(context!!, R.color.bounding_box_color)
         centerPaint.style = Paint.Style.FILL
 
-        centroidPaint.color = ContextCompat.getColor(context!!, R.color.centroid_color)
-        centroidPaint.style = Paint.Style.FILL
+        linePaint.color = ContextCompat.getColor(context!!, R.color.line_color)
+        linePaint.style = Paint.Style.FILL
+        linePaint.strokeWidth = 10F
     }
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
 
-        val centers = ArrayList<Pair<Float, Float>>()
+        class rectDims(
+            val left: Float,
+            val top: Float,
+            val right: Float,
+            val bottom: Float,
+            val centerX: Float,
+            val centerY: Float){}
+
+        val rectangles = ArrayList<rectDims>()
 
         for (result in results) {
             val boundingBox = result.boundingBox
@@ -96,11 +105,11 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
             val centerX = drawableRect.centerX()
             val centerY = drawableRect.centerY()
             val radius = 10f
-            Log.d("Center", String.format("(%.2f, %.2f)", centerX, centerY))
+            // Log.d("Center", String.format("(%.2f, %.2f)", centerX, centerY))
             canvas.drawCircle(centerX, centerY, radius, centerPaint)
 
-            // Add centers to a list
-            centers.add(Pair(centerX, centerY))
+            // Add rectangle dimensions to list - to find focus lines
+            rectangles.add(rectDims(left, top, right, bottom, centerX, centerY))
 
             // Create text to display alongside detected objects
             val drawableText =
@@ -123,16 +132,13 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
             canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
         }
 
-        // Find the centroid of all the object centers
-        val centerXs = centers.map { it.first }
-        val centerYs = centers.map { it.second }
-
-        val centroidX = centerXs.average().toFloat()
-        val centroidY = centerYs.average().toFloat()
-
-        // Draw the centroid
-        val radius = 12f
-        canvas.drawCircle(centroidX, centroidY, radius, centroidPaint)
+        // Draw focus lines
+        val minX = rectangles.minByOrNull { it.centerX }?.left
+        val maxX = rectangles.maxByOrNull { it.centerY }?.right
+        if (minX != null && maxX != null) {
+            canvas.drawLine(minX-100, 0f, minX-100, height.toFloat(), linePaint)
+            canvas.drawLine(maxX+100, 0f, maxX+100, height.toFloat(), linePaint)
+        }
 
     }
 
