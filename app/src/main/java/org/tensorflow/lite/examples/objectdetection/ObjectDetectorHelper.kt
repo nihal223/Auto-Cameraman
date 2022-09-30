@@ -137,7 +137,7 @@ class ObjectDetectorHelper(
 
 
         objectDetectorListener?.onResults(
-            results,
+            personResults,
             inferenceTime,
             tensorImage.height,
             tensorImage.width)
